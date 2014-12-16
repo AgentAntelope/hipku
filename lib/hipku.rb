@@ -17,6 +17,8 @@ module Hipku
   PERIOD = '.'.freeze
   SPACE = ' '.freeze
 
+  FILLER_WORDS = %w[in the and].freeze
+
   NON_WORDS = [NEW_LINE, PERIOD, SPACE].freeze
 
   IPV4_HAIKU_STRUCTURE = [
@@ -285,27 +287,38 @@ module Hipku
       haiku.gsub!(/\n/, ' ')
       haiku.gsub!(/[^a-z\ -]/, '');
       word_array = haiku.split(' ');
-      word_array.reject!{|word| word == ''}
+      word_array.reject!{|word| word == '' || FILLER_WORDS.include?(word)}
       word_array
     end
 
     def to_factors(words)
       factors = []
+      skipped_indexes = []
+      words_passed = 0
 
       words.each_with_index do |word, i|
-        HAIKU_STRUCTURE[@version].uniq.each do |dictionary_words|
-          dictionary_words.each do |dictionary_word|
-            extra_words = dictionary_word.split(' ').count
-            word_to_check = words.slice(i, extra_words).join(' ')
+        next if skipped_indexes.include?(i)
 
-            if dictionary_words.index(word_to_check)
-              factors << dictionary_words.index(word_to_check)
-              break
+        dictionary = HAIKU_STRUCTURE[@version][words_passed]
+
+        dictionary.each do |dictionary_word|
+          extra_words = dictionary_word.split(' ').count
+          word_to_check = words.slice(i, extra_words).join(' ')
+          if dictionary.index(word_to_check)
+            factors << dictionary.index(word_to_check)
+            words_passed += 1
+
+            if extra_words > 1
+              while extra_words > 1 do
+                skipped_indexes << i + extra_words -=1
+              end
             end
+
+            break
           end
         end
       end
-
+      
       factors
     end
 

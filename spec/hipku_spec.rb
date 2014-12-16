@@ -31,7 +31,7 @@ describe Hipku do
       expect(described_class.decode("Strong boats and brash quail\ndent lush steep dead shaped mint skunks.\nFar goats boot stary moths.\n")).to eq('da13:13a8:4776:d331:b07d:c53f:6714:d193')
     end
 
-    xit 'correctly decodes an IPv6 address with words in two dictionaries' do
+    it 'correctly decodes an IPv6 address with words in two dictionaries' do
       expect(described_class.decode("Moist wraiths and mad guards\ndrown grey nude chilled black masked tools.\nShaped frogs blame drab ruffs.")).to eq('7efd:776c:5754:8420:0879:e9b0:5e0c:37b4')
     end
 
