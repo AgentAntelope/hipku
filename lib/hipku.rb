@@ -106,8 +106,7 @@ module Hipku
 
     def encode(ip)
       @version = ip_version(ip)
-
-      ip.gsub!(/[[:space:]]/, '');
+      ip = ip.gsub(/[[:space:]]/, '')
       if @version == :ipv6
         octets = split_ipv6(ip)
         # convert from hexidecimal to decimal octets
@@ -123,7 +122,23 @@ module Hipku
       write_haiku(words)
     end
 
-    def decode(ip)
+    def decode(haiku)
+      words = to_word_array(haiku)
+      @version = haiku_version(words)
+      factors = to_factors(words)
+
+      if @version == :ipv6
+        octets = factors
+        # convert from decimal to hexidecimal octets
+        octets.map! {|octet| base_convert(octet, 10, 16)}
+        octets.map! {|octet| octet.size < 2 ? octet.prepend('0') : octet}
+        ip = join_ipv6(factors)
+      elsif @version == :ipv4
+        octets = to_octets(factors)
+        ip = join_ipv4(octets)
+      end
+
+      ip
     end
 
     private
@@ -137,6 +152,31 @@ module Hipku
       else
         raise "Formatting error in IP Address input (#{ip}). Contains neither ':' or '.'"
       end
+    end
+
+    def haiku_version(haiku)
+      haiku.each do |word|
+        if IPV4_HAIKU_STRUCTURE[0].include?(word)
+          return :ipv4
+        end
+      end
+
+      :ipv6
+    end
+
+    def join_ipv4(octets)
+      octets.join('.')
+    end
+
+    def join_ipv6(octets)
+      joined_octets = []
+      octets_to_join = []
+      octets.each_with_index do |octet, i|
+        next if joined_octets.include?(i)
+        octets_to_join << [octet, octets[i + 1]].join
+        joined_octets << (i + 1)
+      end
+      octets_to_join.join(':')
     end
 
     def split_ipv4(ip)
@@ -238,6 +278,48 @@ module Hipku
 
     def add_space?(candidate)
       !NON_WORDS.include?(candidate)
+    end
+
+    def to_word_array(haiku)
+      haiku = haiku.downcase
+      haiku.gsub!(/\n/, ' ')
+      haiku.gsub!(/[^a-z\ -]/, '');
+      word_array = haiku.split(' ');
+      word_array.reject!{|word| word == ''}
+      word_array
+    end
+
+    def to_factors(words)
+      factors = []
+
+      words.each_with_index do |word, i|
+        HAIKU_STRUCTURE[@version].uniq.each do |dictionary_words|
+          dictionary_words.each do |dictionary_word|
+            extra_words = dictionary_word.split(' ').count
+            word_to_check = words.slice(i, extra_words).join(' ')
+
+            if dictionary_words.index(word_to_check)
+              factors << dictionary_words.index(word_to_check)
+              break
+            end
+          end
+        end
+      end
+
+      factors
+    end
+
+    def to_octets(factors)
+      octets = []
+      ignored_factors = []
+
+      factors.each_with_index do |factor, i|
+        next if ignored_factors.include?(i)
+        octets << (DIVISORS[@version] * factor) + factors[(i+1)]
+        ignored_factors << (i + 1)
+      end
+
+      octets
     end
 
     def capitalize_words(haiku_array)
