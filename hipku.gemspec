@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
-  s.homepage      = 'http://rubygems.org/gems/hipku'
+  s.homepage      = 'https://github.com/AgentAntelope/hipku'
   s.license       = 'MIT'
 
   s.add_development_dependency "rspec", "> 0"
