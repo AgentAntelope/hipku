@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.name          = 'hipku'
   s.version       = Hipku::VERSION
   s.summary       = "Encode any IP address as a haiku"
-  s.description   = "A simple gem to encode IPv4 and IPv6 addresses as haiku. A port of http://gabrielmartin.net/projects/hipku/"
+  s.description   = "A simple gem to encode/decode IPv4 and IPv6 addresses as/from haiku. A port of http://gabrielmartin.net/projects/hipku/"
   s.authors       = ["Alex Sunderland"]
   s.email         = 'agentantelope+hipku@gmail.com'
   s.files         = `git ls-files`.split($/)
